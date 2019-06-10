@@ -1265,9 +1265,13 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
 
         put_ebml_string(pb, MATROSKA_ID_CODECID, codec_id);
     } else {
-        // look for a codec ID string specific to mkv to use,
+        // use specification webvtt codec ID string to avoid old compatiblity string
+        // then look for a codec ID string specific to mkv to use,
         // if none are found, use AVI codes
-        if (par->codec_id != AV_CODEC_ID_RAWVIDEO || par->codec_tag) {
+        if (par->codec_id == AV_CODEC_ID_WEBVTT) {
+            put_ebml_string(pb, MATROSKA_ID_CODECID, "S_TEXT/WEBVTT");
+            native_id = MATROSKA_TRACK_TYPE_SUBTITLE;
+        } else if (par->codec_id != AV_CODEC_ID_RAWVIDEO || par->codec_tag) {
             for (j = 0; ff_mkv_codec_tags[j].id != AV_CODEC_ID_NONE; j++) {
                 if (ff_mkv_codec_tags[j].id == par->codec_id && par->codec_id != AV_CODEC_ID_FFV1) {
                     put_ebml_string(pb, MATROSKA_ID_CODECID, ff_mkv_codec_tags[j].str);
